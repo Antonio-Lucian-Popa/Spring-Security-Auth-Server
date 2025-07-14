@@ -26,6 +26,7 @@ import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -139,6 +140,8 @@ public class AuthService {
                     .email(payload.getEmail())
                     .username(payload.getEmail())
                     .firstName(payload.getName())
+                    .lastName(payload.getName())
+                    .password(passwordEncoder.encode(UUID.randomUUID().toString())) // Parolă generată automat
                     .enabled(true)
                     .roles(Set.of(role))
                     .build();
