@@ -1,0 +1,112 @@
+spring:
+  application:
+    name: auth-server
+  profiles:
+    active: dev
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  datasource:
+    url: jdbc:postgresql://antonio-dev.go.ro:15882/authServerDb
+    username: postgres
+    password: password
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+    contexts: dev
+    drop-first: false
+    default-schema: public
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: auth.server.org@gmail.com
+    password: lduqydftvyuzspoi
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+jwt:
+  secret: ${JWT_SECRET:cnLbAkFva0RYi+kvpPkLCBrSCSz91CnUkYAXAvU60RoPGjTMHRiYuCaLRMVfRQ+8}
+  access-token-expiration-minutes: 15
+  refresh-token-expiration-days: 7
+
+google:
+  client-id: ${GOOGLE_CLIENT_ID}
+
+frontend:
+  url: http://localhost:5173
+
+cors:
+  allowed-origins: "http://localhost:5173"
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api/auth
+
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  datasource:
+    url: jdbc:postgresql://antonio-dev.go.ro:15882/authServerDb
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+    contexts: prod
+    drop-first: false
+    default-schema: public
+
+  mail:
+    host: smtp.mailgun.org
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-expiration-minutes: 15
+  refresh-token-expiration-days: 7
+
+google:
+  client-id: ${GOOGLE_CLIENT_ID}
+
+frontend:
+  url: https://your-frontend.com
+
+cors:
+  allowed-origins: "https://your-frontend.com"
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api/auth

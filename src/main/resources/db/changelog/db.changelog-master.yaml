@@ -1,0 +1,4 @@
+databaseChangeLog:
+  - include:
+      file: AUTHSERVER/master.yaml
+      relativeToChangelogFile: true
