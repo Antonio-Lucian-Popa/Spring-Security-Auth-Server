@@ -29,3 +29,7 @@ CREATE TABLE IF NOT EXISTS user_roles (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
 );
+
+-- changeset antonio:insert-roles
+INSERT INTO roles (id, name) VALUES (uuid_generate_v4(), 'USER');
+INSERT INTO roles (id, name) VALUES (uuid_generate_v4(), 'ADMIN');

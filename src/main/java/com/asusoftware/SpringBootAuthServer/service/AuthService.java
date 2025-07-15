@@ -66,12 +66,13 @@ public class AuthService {
 
         User user = User.builder()
                 .email(request.getEmail())
-                .username(request.getUsername())
+                .username(request.getEmail())
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .enabled(false)
                 .roles(Set.of(defaultRole))
+                .createdAt(new Date().toInstant())
                 .build();
 
         userRepository.save(user);
