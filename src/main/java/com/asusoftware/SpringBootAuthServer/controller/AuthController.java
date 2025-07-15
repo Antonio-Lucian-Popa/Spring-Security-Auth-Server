@@ -41,5 +41,18 @@ public class AuthController {
     public ResponseEntity<AuthenticationResponse> refresh(@RequestBody RefreshTokenRequest request) {
         return ResponseEntity.ok(authService.refreshToken(request));
     }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestParam String email) {
+        authService.sendResetPasswordEmail(email);
+        return ResponseEntity.ok("Email trimis cu link de resetare (dacă userul există).");
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestParam String token, @RequestParam String newPassword) {
+        authService.resetPassword(token, newPassword);
+        return ResponseEntity.ok("Parolă resetată cu succes.");
+    }
+
 }
 

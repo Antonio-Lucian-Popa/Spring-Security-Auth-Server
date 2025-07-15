@@ -23,10 +23,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -82,12 +79,12 @@ public class AuthService {
         String activationToken = jwtService.generateActivationToken(user);
         String activationLink = frontendUrl + "/activate?token=" + activationToken;
 
-        emailService.sendEmail(
-                user.getEmail(),
-                "Activare cont",
-                "Salut " + user.getFirstName() + ",\n\n" +
-                        "Click pe link pentru a-ți activa contul:\n" + activationLink
-        );
+        Map<String, Object> model = new HashMap<>();
+        model.put("name", user.getFirstName());
+        model.put("activationLink", activationLink);
+
+        emailService.sendHtmlEmail(user.getEmail(), "Activare cont", "activation-email", model);
+
     }
 
     public void confirmAccount(String token) {
@@ -175,6 +172,44 @@ public class AuthService {
         } catch (HttpClientErrorException ex) {
             throw new RuntimeException("Token invalid sau expirat", ex);
         }
+    }
+
+    public void sendResetPasswordEmail(String email) {
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+
+            String token = jwtService.generateResetToken(user); // vei crea metoda asta
+            String link = frontendUrl + "/reset-password?token=" + token;
+
+            Map<String, Object> model = new HashMap<>();
+            model.put("name", user.getFirstName());
+            model.put("resetLink", link);
+
+            emailService.sendHtmlEmail(user.getEmail(), "Resetare parolă", "reset-password-email", model);
+
+        }
+    }
+
+
+    public void resetPassword(String token, String newPassword) {
+        if (!jwtService.isValidToken(token)) {
+            throw new IllegalArgumentException("Token invalid sau expirat.");
+        }
+
+        Claims claims = jwtService.extractAllClaims(token);
+        String type = (String) claims.get("type");
+        if (!"RESET".equals(type)) {
+            throw new IllegalArgumentException("Token invalid pentru resetare parolă.");
+        }
+
+        String email = claims.getSubject();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
     }
 
 

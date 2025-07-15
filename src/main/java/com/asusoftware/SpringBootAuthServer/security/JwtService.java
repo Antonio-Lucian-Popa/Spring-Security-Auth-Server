@@ -64,6 +64,17 @@ public class JwtService {
                 .compact();
     }
 
+    public String generateResetToken(User user) {
+        return Jwts.builder()
+                .setSubject(user.getEmail())
+                .claim("type", "RESET")
+                .setIssuedAt(new Date())
+                .setExpiration(Date.from(Instant.now().plus(30, ChronoUnit.MINUTES))) // valabil 30 min
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+
     public boolean isValidToken(String token) {
         try {
             extractAllClaims(token);

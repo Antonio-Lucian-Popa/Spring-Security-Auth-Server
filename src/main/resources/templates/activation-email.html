@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body style="font-family: sans-serif; padding: 20px; color: #333;">
+<h2>Bine ai venit, <span th:text="${name}">nume</span>!</h2>
+<p>Apasă pe butonul de mai jos pentru a-ți activa contul:</p>
+<a th:href="${activationLink}" style="background: #4CAF50; padding: 10px 20px; color: white; text-decoration: none; border-radius: 5px;">
+    Activează contul
+</a>
+<p>Dacă nu ai cerut acest cont, ignoră acest email.</p>
+<br>
+<p>Echipa Auth Server 🚀</p>
+</body>
+</html>
