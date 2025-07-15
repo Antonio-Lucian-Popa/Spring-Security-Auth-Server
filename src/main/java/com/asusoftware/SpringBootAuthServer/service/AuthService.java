@@ -142,6 +142,7 @@ public class AuthService {
                     .password(passwordEncoder.encode(UUID.randomUUID().toString())) // Parolă generată automat
                     .enabled(true)
                     .roles(Set.of(role))
+                    .createdAt(new Date().toInstant())
                     .build();
 
             return userRepository.save(newUser);
