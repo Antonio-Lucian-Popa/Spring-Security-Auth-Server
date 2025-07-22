@@ -33,3 +33,6 @@ CREATE TABLE IF NOT EXISTS user_roles (
 -- changeset antonio:insert-roles
 INSERT INTO roles (id, name) VALUES (uuid_generate_v4(), 'USER');
 INSERT INTO roles (id, name) VALUES (uuid_generate_v4(), 'ADMIN');
+INSERT INTO roles (id, name) VALUES (uuid_generate_v4(), 'DOCTOR');
+INSERT INTO roles (id, name) VALUES (uuid_generate_v4(), 'ASSISTANT');
+INSERT INTO roles (id, name) VALUES (uuid_generate_v4(), 'OWNER');

@@ -4,7 +4,6 @@ import com.asusoftware.SpringBootAuthServer.model.Role;
 import com.asusoftware.SpringBootAuthServer.model.User;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,7 +14,6 @@ import java.security.Key;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -36,7 +34,7 @@ public class JwtService {
 
     public String generateAccessToken(User user) {
         return Jwts.builder()
-                .setSubject(user.getEmail())
+                .setSubject(user.getId().toString())
                 .claim("roles", user.getRoles().stream().map(Role::getName).toList())
                 .setIssuedAt(new Date())
                 .setExpiration(Date.from(Instant.now().plus(accessTokenMinutes, ChronoUnit.MINUTES)))
@@ -46,7 +44,7 @@ public class JwtService {
 
     public String generateRefreshToken(User user) {
         return Jwts.builder()
-                .setSubject(user.getEmail())
+                .setSubject(user.getId().toString())
                 .claim("type", "REFRESH")
                 .setIssuedAt(new Date())
                 .setExpiration(Date.from(Instant.now().plus(refreshTokenDays, ChronoUnit.DAYS)))
@@ -56,7 +54,7 @@ public class JwtService {
 
     public String generateActivationToken(User user) {
         return Jwts.builder()
-                .setSubject(user.getEmail())
+                .setSubject(user.getId().toString())
                 .claim("type", "ACTIVATION")
                 .setIssuedAt(new Date())
                 .setExpiration(Date.from(Instant.now().plus(1, ChronoUnit.DAYS)))
@@ -66,7 +64,7 @@ public class JwtService {
 
     public String generateResetToken(User user) {
         return Jwts.builder()
-                .setSubject(user.getEmail())
+                .setSubject(user.getId().toString())
                 .claim("type", "RESET")
                 .setIssuedAt(new Date())
                 .setExpiration(Date.from(Instant.now().plus(30, ChronoUnit.MINUTES))) // valabil 30 min
@@ -94,7 +92,7 @@ public class JwtService {
         }
     }
 
-    public String extractEmail(String token) {
+    public String extractUserId(String token) {
         return extractAllClaims(token).getSubject();
     }
 
@@ -108,7 +106,7 @@ public class JwtService {
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
         try {
-            final String email = extractEmail(token);
+            final String email = extractUserId(token);
             return (email.equals(userDetails.getUsername()) && !isTokenExpired(token));
         } catch (Exception e) {
             return false;

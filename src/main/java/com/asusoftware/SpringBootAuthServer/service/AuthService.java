@@ -6,9 +6,6 @@ import com.asusoftware.SpringBootAuthServer.model.User;
 import com.asusoftware.SpringBootAuthServer.repository.RoleRepository;
 import com.asusoftware.SpringBootAuthServer.repository.UserRepository;
 import com.asusoftware.SpringBootAuthServer.security.JwtService;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
-import com.google.api.client.http.javanet.NetHttpTransport;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,9 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -61,7 +57,7 @@ public class AuthService {
             throw new IllegalArgumentException("Email deja înregistrat.");
         }
 
-        Role defaultRole = roleRepository.findByName("USER")
+        Role defaultRole = roleRepository.findByName(request.getRole())
                 .orElseThrow(() -> new RuntimeException("Rolul USER nu există în DB"));
 
         User user = User.builder()
@@ -94,14 +90,14 @@ public class AuthService {
         }
 
         Claims claims = jwtService.extractAllClaims(token);
-        String email = claims.getSubject();
+        UUID userId = UUID.fromString(claims.getSubject());
         String type = (String) claims.get("type");
 
         if (!"ACTIVATION".equals(type)) {
             throw new IllegalArgumentException("Token invalid pentru activare.");
         }
 
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         if (Boolean.TRUE.equals(user.getEnabled())) {
@@ -117,8 +113,8 @@ public class AuthService {
             throw new RuntimeException("Token invalid");
         }
 
-        String email = jwtService.extractEmail(request.getRefreshToken());
-        User user = userRepository.findByEmail(email)
+        UUID userId = UUID.fromString(jwtService.extractUserId(request.getRefreshToken()));
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         String newAccessToken = jwtService.generateAccessToken(user);
@@ -206,14 +202,43 @@ public class AuthService {
             throw new IllegalArgumentException("Token invalid pentru resetare parolă.");
         }
 
-        String email = claims.getSubject();
-        User user = userRepository.findByEmail(email)
+        UUID userId = UUID.fromString(claims.getSubject());
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
     }
 
+    public void updateProfile(UUID userId, UpdateProfileRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
+        if (!user.getEmail().equals(request.getEmail())) {
+            if (userRepository.existsByEmail(request.getEmail())) {
+                throw new IllegalArgumentException("Email deja folosit.");
+            }
+            user.setEmail(request.getEmail());
+            user.setUsername(request.getEmail());
+        }
+
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+
+        if (request.getPassword() != null && !request.getPassword().isBlank()) {
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+
+        if (request.getRoles() != null && !request.getRoles().isEmpty()) {
+            Set<Role> newRoles = request.getRoles().stream()
+                    .map(roleName -> roleRepository.findByName(roleName)
+                            .orElseThrow(() -> new RuntimeException("Rolul " + roleName + " nu există")))
+                    .collect(Collectors.toSet());
+
+            user.setRoles(newRoles);
+        }
+
+        userRepository.save(user);
+    }
 }
 
