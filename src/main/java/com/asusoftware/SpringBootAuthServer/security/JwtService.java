@@ -2,6 +2,7 @@ package com.asusoftware.SpringBootAuthServer.security;
 
 import com.asusoftware.SpringBootAuthServer.model.Role;
 import com.asusoftware.SpringBootAuthServer.model.User;
+import com.asusoftware.SpringBootAuthServer.repository.UserRepository;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,8 @@ public class JwtService {
 
     @Value("${jwt.refresh-token-expiration-days}")
     private int refreshTokenDays;
+
+    private final UserRepository userRepository;
 
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
@@ -92,8 +95,8 @@ public class JwtService {
         }
     }
 
-    public String extractUserId(String token) {
-        return extractAllClaims(token).getSubject();
+    public UUID extractUserId(String token) {
+        return UUID.fromString(extractAllClaims(token).getSubject());
     }
 
     public Claims extractAllClaims(String token) {
@@ -106,8 +109,10 @@ public class JwtService {
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
         try {
-            final String email = extractUserId(token);
-            return (email.equals(userDetails.getUsername()) && !isTokenExpired(token));
+            final UUID userId = extractUserId(token);
+            final User user = userRepository.findById(userId)
+                    .orElse(null);
+            return (user != null && user.getEmail().equals(userDetails.getUsername()) && !isTokenExpired(token));
         } catch (Exception e) {
             return false;
         }

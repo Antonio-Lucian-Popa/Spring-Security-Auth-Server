@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -113,7 +114,7 @@ public class AuthService {
             throw new RuntimeException("Token invalid");
         }
 
-        UUID userId = UUID.fromString(jwtService.extractUserId(request.getRefreshToken()));
+        UUID userId = jwtService.extractUserId(request.getRefreshToken());
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
@@ -133,8 +134,8 @@ public class AuthService {
             User newUser = User.builder()
                     .email(payload.getEmail())
                     .username(payload.getEmail())
-                    .firstName(payload.getName())
-                    .lastName(payload.getName())
+                    .firstName(payload.getGiven_name())
+                    .lastName(payload.getFamily_name())
                     .password(passwordEncoder.encode(UUID.randomUUID().toString())) // Parolă generată automat
                     .enabled(true)
                     .roles(Set.of(role))
@@ -241,9 +242,9 @@ public class AuthService {
         userRepository.save(user);
     }
 
-    public UserResponse getProfile(UUID userId) {
-        System.out.println("Fetching profile for user ID: " + userId);
-        User user = userRepository.findById(userId)
+    public UserResponse getProfile(UserDetails userDetails) {
+        System.out.println("Fetching profile for user ID: " + userDetails.getUsername());
+        User user = userRepository.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         return UserResponse.builder()
