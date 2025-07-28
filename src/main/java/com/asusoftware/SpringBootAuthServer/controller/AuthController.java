@@ -5,8 +5,9 @@ import com.asusoftware.SpringBootAuthServer.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
+
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -56,6 +57,13 @@ public class AuthController {
     public ResponseEntity<?> resetPassword(@RequestParam String token, @RequestParam String newPassword) {
         authService.resetPassword(token, newPassword);
         return ResponseEntity.ok("Parolă resetată cu succes.");
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserResponse> getProfile(@AuthenticationPrincipal Jwt jwt) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        UserResponse userResponse = authService.getProfile(userId);
+        return ResponseEntity.ok(userResponse);
     }
 
     /*@PutMapping("/me")

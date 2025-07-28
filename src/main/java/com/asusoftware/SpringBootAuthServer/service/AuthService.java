@@ -240,5 +240,22 @@ public class AuthService {
 
         userRepository.save(user);
     }
+
+    public UserResponse getProfile(UUID userId) {
+        System.out.println("Fetching profile for user ID: " + userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        return UserResponse.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .username(user.getUsername())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .roles(user.getRoles().stream().map(Role::getName).collect(Collectors.toSet()))
+                .createdAt(user.getCreatedAt())
+                .enabled(user.getEnabled())
+                .build();
+    }
 }
 
