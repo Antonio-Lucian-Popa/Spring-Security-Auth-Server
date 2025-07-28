@@ -211,8 +211,8 @@ public class AuthService {
         userRepository.save(user);
     }
 
-    public void updateProfile(UUID userId, UpdateProfileRequest request) {
-        User user = userRepository.findById(userId)
+    public void updateProfile(UserDetails userDetails, UpdateProfileRequest request) {
+        User user = userRepository.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         if (!user.getEmail().equals(request.getEmail())) {

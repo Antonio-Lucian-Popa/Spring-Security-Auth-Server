@@ -66,16 +66,14 @@ public class AuthController {
         return ResponseEntity.ok(userResponse);
     }
 
-    /*@PutMapping("/me")
-    @PreAuthorize("isAuthenticated()") // sau @PreAuthorize("hasAuthority('USER')") dacă vrei
+    @PutMapping("/me")
     public ResponseEntity<?> updateProfile(
-            @AuthenticationPrincipal Jwt jwt,
+            @AuthenticationPrincipal UserDetails userDetails,
             @RequestBody UpdateProfileRequest request
     ) {
-        UUID userId = UUID.fromString(jwt.getSubject());
-        authService.updateProfile(userId, request);
+        authService.updateProfile(userDetails, request);
         return ResponseEntity.ok("Profil actualizat cu succes.");
-    }*/
+    }
 
 
 }
