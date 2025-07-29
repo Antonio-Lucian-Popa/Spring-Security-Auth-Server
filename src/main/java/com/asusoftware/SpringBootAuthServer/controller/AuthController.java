@@ -66,7 +66,7 @@ public class AuthController {
         return ResponseEntity.ok(userResponse);
     }
 
-    @PutMapping("/me")
+    @PutMapping("/profile")
     public ResponseEntity<?> updateProfile(
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestBody UpdateProfileRequest request
